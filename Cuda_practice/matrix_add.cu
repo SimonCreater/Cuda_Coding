@@ -12,11 +12,17 @@ __global__ void MatAdd(float A[N][N], float B[N][N], float C[N][N]) {
         C[i][j] = A[i][j] + B[i][j];
     }
 }
+__global__ void VecAdd(float *A,float* B,float* c,int N){
+    int i=blockDim.X*blockIdx.x+threadIdx.x;
+    if(i<N)
+    C[i]=A[i]+B[i];
+}
 
 
 int main() {
-    float A[N][N], B[N][N], C[N][N];
-    float (*d_A)[N], (*d_B)[N], (*d_C)[N];
+    float A[N][N], B[N][N], C[N][N];//cpu
+    float (*d_A)[N], (*d_B)[N], (*d_C)[N];//gpu
+    size_t size=N*sizeof(float);
 
 
     for (int i = 0; i < N; i++) {
@@ -25,6 +31,16 @@ int main() {
             B[i][j] = j * 0.2f + i * 0.2f;
         }
     }
+    // float* h_A=(float*)malloc(size);
+    // float* h_B=(float*)malloc(size);
+    // float* h_C=(float*)malloc(size);//cpu부분
+
+    // float *d_A;
+    // cudaMalloc(&d_A,size);
+    // float *d_B;
+    // cudaMalloc(&d_B,size);
+    // float *d_C;
+    // cudaMalloc(&d_C,size);//gpu 부분 할당
 
 
     cudaMalloc((void**)&d_A, N * N * sizeof(float));
@@ -33,7 +49,7 @@ int main() {
 
 
     cudaMemcpy(d_A, A, N * N * sizeof(float), cudaMemcpyHostToDevice);
-    cudaMemcpy(d_B, B, N * N * sizeof(float), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_B, B, N * N * sizeof(float), cudaMemcpyHostToDevice);//CPU -> GPU
 
 
     dim3 threadsPerBlock(N, N);
